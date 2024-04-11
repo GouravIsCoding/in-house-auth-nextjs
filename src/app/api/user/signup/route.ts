@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
         email,
         password: hashedPassword,
         verification_token: uuid,
-        verification_expiry: new Date(Date.now() + 3600 * 1000),
+        verification_expiry: new Date(Date.now() + 3600 * 4 * 1000), // 4 hours
       },
     });
 

@@ -3,8 +3,9 @@ import prisma from "@/utils/prisma";
 import { comparePasswords } from "@/utils/bcrypt";
 import { signinSchema } from "@/utils/validators";
 import { ZodError } from "zod";
-import { sign } from "jsonwebtoken";
 import CONFIG from "@/config";
+
+import * as jose from "jose";
 
 const thirtyDay = 24 * 60 * 60 * 1000 * 30;
 
@@ -46,7 +47,10 @@ export async function POST(req: NextRequest) {
       lastname: user.lastname,
       email: user.email,
     };
-    const accessToken = sign(jwtPayload, CONFIG.ACCESS_TOKEN);
+    const accessToken = await new jose.SignJWT(jwtPayload)
+      .setProtectedHeader({ alg: "HS256" })
+      .sign(CONFIG.ACCESS_TOKEN);
+    console.log(accessToken, "here");
     const fifteenMinutes = 1000 * 60 * 15; //15 minutes
 
     const res = NextResponse.json({ message: "user login successful!" });
@@ -73,7 +77,9 @@ export async function POST(req: NextRequest) {
       return res;
     }
 
-    const jwtRefreshToken = sign(jwtPayload, CONFIG.REFRESH_TOKEN);
+    const jwtRefreshToken = await new jose.SignJWT(jwtPayload)
+      .setProtectedHeader({ alg: "HS256" })
+      .sign(CONFIG.REFRESH_TOKEN);
     const refreshTokenexpiry = Date.now() + thirtyDay;
 
     await prisma.user.update({

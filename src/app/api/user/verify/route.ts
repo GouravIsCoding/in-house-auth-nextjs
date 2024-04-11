@@ -14,7 +14,10 @@ export async function POST(req: NextRequest) {
     });
     if (!user)
       return NextResponse.json(
-        { message: "invalid or expired verificaiton token" },
+        {
+          message:
+            "invalid or expired verificaiton token or You have already verified",
+        },
         { status: 400 }
       );
     await prisma.user.update({
