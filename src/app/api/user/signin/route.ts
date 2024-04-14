@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     const accessToken = await new jose.SignJWT(jwtPayload)
       .setProtectedHeader({ alg: "HS256" })
       .sign(CONFIG.ACCESS_TOKEN);
-    console.log(accessToken, "here");
+
     const fifteenMinutes = 1000 * 60 * 15; //15 minutes
 
     const res = NextResponse.json({ message: "user login successful!" });
