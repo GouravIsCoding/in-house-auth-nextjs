@@ -17,8 +17,10 @@ import { Input } from "@/components/ui/input";
 import FormWrapper from "@/components/wrapper/formWrapper";
 import CONFIG from "@/config";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
+  const router = useRouter();
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const form = useForm<z.infer<typeof signinSchema>>({
@@ -37,7 +39,10 @@ export default function Page() {
       .then((res) => {
         const { error, message } = res.data;
         if (error) return setErr(() => error);
-        if (message) return setMsg(() => message);
+        if (message) {
+          setMsg(() => message);
+          return router.push("/");
+        }
       })
       .catch((error) => {
         setErr(() => error.response.data.message);

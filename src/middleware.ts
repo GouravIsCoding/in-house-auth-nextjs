@@ -14,7 +14,10 @@ export async function middleware(req: NextRequest) {
   try {
     const accessToken = req.cookies.get("access_token");
     if (!accessToken)
-      return NextResponse.json({ message: "Not logged in!" }, { status: 403 });
+      return NextResponse.json(
+        { message: "Not logged in!", accessTokenNeeded: true },
+        { status: 403 }
+      );
     const verified = await jose.jwtVerify<userToken>(
       accessToken.value,
       CONFIG.ACCESS_TOKEN

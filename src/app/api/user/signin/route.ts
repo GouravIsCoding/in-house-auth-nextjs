@@ -61,6 +61,11 @@ export async function POST(req: NextRequest) {
       sameSite: "lax",
       expires: Date.now() + fifteenMinutes,
     });
+    res.cookies.set({
+      name: "auth_status",
+      value: "true",
+      sameSite: "lax",
+    });
     if (
       user.refresh_token &&
       user.refresh_token_expiry &&

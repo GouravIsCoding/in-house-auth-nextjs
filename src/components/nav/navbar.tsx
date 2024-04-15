@@ -4,8 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LogoutButton from "./logoutButton";
 import { useEffect, useState } from "react";
-import axios, { AxiosError } from "axios";
-import CONFIG from "@/config";
+import Cookies from "js-cookie";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -17,25 +16,18 @@ export default function Navbar() {
     { id: 3, name: "Profile", to: "/profile", authInfo: authStatus },
   ];
   useEffect(() => {
-    axios
-      .get(`${CONFIG.DOMAIN}/api/user/authstatus`)
-      .then((res) => {
-        const auth = res.data.authStatus;
-        setAuthStatus(auth);
-      })
-      .catch((error) => {
-        if (error instanceof AxiosError) {
-          const auth = error.response?.data.authStatus;
-          setAuthStatus(auth);
-        }
-      });
-  }, []);
+    if (Cookies.get("auth_status")) {
+      setAuthStatus(true);
+    }
+  }, [pathname]);
 
   return (
     <>
       <nav className="bg-black min-h-12 text-white">
         <div className="py-6 px-6">
-          <div className="inline-block text-2xl">InHouseAuth</div>
+          <Link href={"/"}>
+            <div className="inline-block text-2xl">InHouseAuth</div>
+          </Link>
           <div className="float-right inline-block">
             {navItems.map(
               (item) =>
@@ -52,7 +44,7 @@ export default function Navbar() {
                   </li>
                 )
             )}
-            {authStatus && <LogoutButton />}
+            {authStatus && <LogoutButton setAuthStatus={setAuthStatus} />}
           </div>
         </div>
       </nav>
