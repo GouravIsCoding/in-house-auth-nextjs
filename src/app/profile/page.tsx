@@ -1,37 +1,39 @@
+"use client";
 import CONFIG from "@/config";
-import axios, { AxiosError } from "axios";
-import { cookies } from "next/headers";
+import accessRetry from "@/utils/access";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
-export default async function Page() {
-  let user, message;
-  try {
-    const res = await axios.get(`${CONFIG.DOMAIN}/api/user/profile`, {
-      headers: {
-        Cookie: cookies().toString(),
-      },
-    });
-    message = res.data.message;
-    user = res.data.user;
-  } catch (error) {
-    if (error instanceof AxiosError) message = error.response?.data.message;
-  }
+export default function Page() {
+  const [msg, setMsg] = useState<string | null>(null);
+  const [usr, setUsr] = useState<any | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const response = await accessRetry(async () => {
+        return await axios.get(`${CONFIG.DOMAIN}/api/user/profile`);
+      });
+      console.log(response);
+      const { user, message } = response?.data;
+      setMsg(message);
+      setUsr(user);
+    })();
+  }, []);
 
   return (
     <>
       <div className="h-screen w-full flex items-center justify-center flex-col">
-        {message && (
-          <div className="bg-green-700 p-4 rounded-lg text-white">
-            {message}
-          </div>
+        {msg && (
+          <div className="bg-green-700 p-4 rounded-lg text-white">{msg}</div>
         )}
-        {user && (
+        {usr && (
           <div className="p-4 shadow-md">
             <h1 className="text-lg font-semibold">Details</h1>
             <p>
-              Name: {user.firstname} {user.lastname}
+              Name: {usr.firstname} {usr.lastname}
             </p>
-            <p>ID: {user.id}</p>
-            <p>E-mail: {user.email}</p>
+            <p>ID: {usr.id}</p>
+            <p>E-mail: {usr.email}</p>
           </div>
         )}
       </div>

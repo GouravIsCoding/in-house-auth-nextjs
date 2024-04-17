@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/utils/prisma";
-import { comparePasswords } from "@/utils/bcrypt";
-import { signinSchema } from "@/utils/validators";
-import { ZodError } from "zod";
 import CONFIG from "@/config";
 
 import * as jose from "jose";
@@ -16,8 +13,12 @@ interface userToken {
 export async function POST(req: NextRequest) {
   try {
     const refreshToken = req.cookies.get("refresh_token");
+
     if (!refreshToken)
-      return NextResponse.json({ message: "Invalid session" }, { status: 403 });
+      return NextResponse.json(
+        { message: "Invalid session 1" },
+        { status: 403 }
+      );
     const verified = await jose.jwtVerify<userToken>(
       refreshToken.value,
       CONFIG.REFRESH_TOKEN
@@ -28,10 +29,18 @@ export async function POST(req: NextRequest) {
       },
     });
     if (!user)
-      return NextResponse.json({ message: "Invalid session" }, { status: 403 });
+      return NextResponse.json(
+        { message: "Invalid session 2" },
+        { status: 403 }
+      );
+    if (user.refresh_token !== refreshToken.value)
+      return NextResponse.json(
+        { message: "invalid refresh token" },
+        { status: 403 }
+      );
 
     if (
-      user?.refresh_token_expiry &&
+      user.refresh_token_expiry &&
       new Date(user.refresh_token_expiry) < new Date(Date.now())
     ) {
       await prisma.user.update({
@@ -68,7 +77,6 @@ export async function POST(req: NextRequest) {
       name: "access_token",
       value: accessToken,
       httpOnly: true,
-      sameSite: "lax",
       expires: Date.now() + fifteenMinutes,
     });
     return res;
